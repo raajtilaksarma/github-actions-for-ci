@@ -7,20 +7,39 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    steps:
+      - uses: actions/checkout@v1
+      - name: npm install and build webpack
+        run: |
+          npm install
+          npm run build
+      - uses: actions/upload-artifact@master
+        with:
+          name: webpack artifacts
+          path: public/
+
+  test:
+    needs : build
+    runs-on: ubuntu-latest
+
     strategy:
       matrix:
-        node-version: [8.x, 10.x, 12.x]
+        os: [ubuntu-lastest, windows-2016]
+        node-version: [8.x, 10.x]
 
     steps:
     - uses: actions/checkout@v1
+    - uses: actions/download-artifact@master
+      with: 
+        name: webpack artifacts
+        path: public
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: npm install, build, and test
+    - name: npm install, and test
       run: |
-        npm ci
-        npm run build --if-present
+        npm install
         npm test
       env:
         CI: true
